@@ -34,17 +34,19 @@ filegroup(
 cc_toolchain_suite(
     name = "toolchain",
     toolchains = {
-        "k8|clang": ":cc-clang-linux",
+        "k8|clang": ":cc-clang-linux-x86",
         "darwin|clang": ":cc-clang-darwin",
-        "k8": ":cc-clang-linux",
+        "k8": ":cc-clang-linux-x86",
         "darwin": ":cc-clang-darwin",
+        "aarch64": ":cc-clang-linux-aarch64",
+        "aarch64|clang": ":cc-clang-linux-aarch64",
     },
 )
 
 load("@com_grail_bazel_toolchain//toolchain:rules.bzl", "conditional_cc_toolchain")
 
-conditional_cc_toolchain("cc-clang-linux", "aarch64", False, %{absolute_paths})
-conditional_cc_toolchain("cc-clang-linux", "k8", False, %{absolute_paths})
+conditional_cc_toolchain("cc-clang-linux-aarch64", "aarch64", False, %{absolute_paths})
+conditional_cc_toolchain("cc-clang-linux-x86", "k8", False, %{absolute_paths})
 conditional_cc_toolchain("cc-clang-darwin", "darwin", True, %{absolute_paths})
 
 ## LLVM toolchain files

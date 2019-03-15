@@ -298,7 +298,7 @@ toolchain {
 }
 
 toolchain {
-  toolchain_identifier: "clang-linux-arm64"
+  toolchain_identifier: "clang-linux-aarch64"
   abi_version: "clang"
   abi_libc_version: "glibc_unknown"
   compiler: "clang"
