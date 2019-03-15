@@ -89,10 +89,17 @@ def llvm_toolchain_impl(rctx):
 def conditional_cc_toolchain(name, cpu, darwin, absolute_paths = False):
     # Toolchain macro for BUILD file to use conditional logic.
 
+    if darwin:
+        toolchain = 'clang-darwin'
+    else:
+        if cpu == 'aarch64':
+            toolchain = 'clang-linux-aarch64'
+        else:
+            toolchain = 'clang-linux-x86'
     if absolute_paths:
         native.cc_toolchain(
             name = name,
-            toolchain_identifier = "clang-darwin" if darwin else "clang-linux",
+            toolchain_identifier = toolchain,
             cpu = cpu,
             all_files = ":empty",
             compiler_files = ":empty",
@@ -111,7 +118,7 @@ def conditional_cc_toolchain(name, cpu, darwin, absolute_paths = False):
         native.filegroup(name = name + "-linker-files", srcs = [":linker_components"] + extra_files)
         native.cc_toolchain(
             name = name,
-            toolchain_identifier = "clang-darwin" if darwin else "clang-linux",
+            toolchain_identifier = toolchain,
             cpu = cpu,
             all_files = name + "-all-files",
             compiler_files = name + "-compiler-files",

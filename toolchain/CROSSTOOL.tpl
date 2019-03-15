@@ -33,7 +33,7 @@ toolchain {
 }
 
 toolchain {
-  toolchain_identifier: "clang-linux"
+  toolchain_identifier: "clang-linux-x86"
   abi_version: "clang"
   abi_libc_version: "glibc_unknown"
   compiler: "clang"
@@ -271,6 +271,130 @@ toolchain {
       }
     }
   }
+
+  feature {
+    name: 'coverage'
+    provides: 'profile'
+    flag_set {
+      action: 'preprocess-assemble'
+      action: 'c-compile'
+      action: 'c++-compile'
+      action: 'c++-header-parsing'
+      action: 'c++-module-compile'
+      flag_group {
+        flag: '-fprofile-instr-generate'
+        flag: '-fcoverage-mapping'
+      }
+    }
+    flag_set {
+      action: 'c++-link-dynamic-library'
+      action: 'c++-link-nodeps-dynamic-library'
+      action: 'c++-link-executable'
+      flag_group {
+        flag: '-fprofile-instr-generate'
+      }
+    }
+  }
+}
+
+toolchain {
+  toolchain_identifier: "clang-linux-arm64"
+  abi_version: "clang"
+  abi_libc_version: "glibc_unknown"
+  compiler: "clang"
+  host_system_name: "aarch64"
+  needsPic: true
+  supports_incremental_linker: false
+  supports_fission: false
+  supports_interface_shared_objects: false
+  supports_normalizing_ar: false
+  supports_start_end_lib: true
+  supports_gold_linker: true
+  target_libc: "glibc_unknown"
+  target_cpu: "aarch64"
+  target_system_name: "aarch64-unknown-linux-gnu"
+
+  builtin_sysroot: "%{sysroot_path}"
+
+  # Working with symlinks; anticipated to be a future default.
+  compiler_flag: "-no-canonical-prefixes"
+  linker_flag: "-no-canonical-prefixes"
+
+  # Reproducibility.
+  unfiltered_cxx_flag: "-Wno-builtin-macro-redefined"
+  unfiltered_cxx_flag: "-D__DATE__=\"redacted\""
+  unfiltered_cxx_flag: "-D__TIMESTAMP__=\"redacted\""
+  unfiltered_cxx_flag: "-D__TIME__=\"redacted\""
+  unfiltered_cxx_flag: "-fdebug-prefix-map=%{toolchain_path_prefix}=%{debug_toolchain_path_prefix}"
+
+  # Security
+  compiler_flag: "-U_FORTIFY_SOURCE"
+  compiler_flag: "-fstack-protector"
+  compiler_flag: "-fcolor-diagnostics"
+  compiler_flag: "-fno-omit-frame-pointer"
+
+  # Diagnostics
+  compiler_flag: "-Wall"
+
+  # C++
+  cxx_flag: "-std=c++17"
+  cxx_flag: "-stdlib=libc++"
+  # The linker has no way of knowing if there are C++ objects; so we always link C++ libraries.
+  linker_flag: "-L%{toolchain_path_prefix}lib"
+  linker_flag: "-l:libc++.a"
+  linker_flag: "-l:libc++abi.a"
+  linker_flag: "-l:libunwind.a"
+  cxx_flag: "-DLIBCXX_USE_COMPILER_RT=YES"
+  linker_flag: "-rtlib=compiler-rt"
+  linker_flag: "-lpthread"  # For libunwind
+  linker_flag: "-ldl"  # For libunwind
+
+  # Linker
+  linker_flag: "-lm"
+  linker_flag: "-fuse-ld=lld"
+  linker_flag: "-Wl,--build-id=md5"
+  linker_flag: "-Wl,--hash-style=gnu"
+
+  # Syntax for include directories is mentioned at:
+  # https://github.com/bazelbuild/bazel/blob/d61a185de8582d29dda7525bb04d8ffc5be3bd11/src/main/java/com/google/devtools/build/lib/rules/cpp/CcToolchain.java#L125
+  cxx_builtin_include_directory: "%{toolchain_path_prefix}include/c++/v1"
+  cxx_builtin_include_directory: "%{toolchain_path_prefix}lib/clang/%{llvm_version}/include"
+  cxx_builtin_include_directory: "%{sysroot_prefix}/include"
+  cxx_builtin_include_directory: "%{sysroot_prefix}/usr/include"
+  cxx_builtin_include_directory: "%{sysroot_prefix}/usr/local/include"
+
+  objcopy_embed_flag: "-I"
+  objcopy_embed_flag: "binary"
+
+  tool_path {name: "ld" path: "%{tools_path_prefix}bin/ld.lld" }
+  tool_path {name: "cpp" path: "%{tools_path_prefix}bin/clang-cpp" }
+  tool_path {name: "dwp" path: "%{tools_path_prefix}bin/llvm-dwp" }
+  tool_path {name: "gcov" path: "%{tools_path_prefix}bin/llvm-profdata" }
+  tool_path {name: "nm" path: "%{tools_path_prefix}bin/llvm-nm" }
+  tool_path {name: "objcopy" path: "%{tools_path_prefix}bin/llvm-objcopy" }
+  tool_path {name: "objdump" path: "%{tools_path_prefix}bin/llvm-objdump" }
+  tool_path {name: "strip" path: "/usr/bin/strip" }
+  tool_path {name: "gcc" path: "%{tools_path_prefix}bin/clang" }
+  tool_path {name: "ar" path: "%{tools_path_prefix}bin/llvm-ar" }
+
+  compilation_mode_flags {
+    mode: DBG
+    compiler_flag: "-g"
+    compiler_flag: "-fstandalone-debug"
+  }
+
+  compilation_mode_flags {
+    mode: OPT
+    compiler_flag: "-g0"
+    compiler_flag: "-O2"
+    compiler_flag: "-D_FORTIFY_SOURCE=1"
+    compiler_flag: "-DNDEBUG"
+    compiler_flag: "-ffunction-sections"
+    compiler_flag: "-fdata-sections"
+    linker_flag: "-Wl,--gc-sections"
+  }
+
+  linking_mode_flags { mode: DYNAMIC }
 
   feature {
     name: 'coverage'
