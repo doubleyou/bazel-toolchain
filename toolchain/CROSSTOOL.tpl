@@ -362,6 +362,11 @@ toolchain {
   cxx_builtin_include_directory: "%{sysroot_prefix}/include"
   cxx_builtin_include_directory: "%{sysroot_prefix}/usr/include"
   cxx_builtin_include_directory: "%{sysroot_prefix}/usr/local/include"
+  cxx_builtin_include_directory: "%{toolchain_path_prefix}include/c++/v1"
+  cxx_builtin_include_directory: "%{toolchain_path_prefix}lib/clang/%{llvm_version}/include"
+  cxx_builtin_include_directory: "%{sysroot_prefix}/usr/include"
+  cxx_builtin_include_directory: "%{sysroot_prefix}/System/Library/Frameworks"
+  cxx_builtin_include_directory: "/Library/Frameworks"
 
   objcopy_embed_flag: "-I"
   objcopy_embed_flag: "binary"
